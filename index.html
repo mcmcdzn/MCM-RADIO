@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#16110e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MCM">
+<title>MCM Radio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* MCM — mid-century walnut room, brass dial, one lamp on. Layout: masthead, genre dial, ranked list, docked player. */
+:root{
+  --walnut:#16110e;
+  --walnut-2:#211914;
+  --walnut-3:#2c221b;
+  --line:#3a2e25;
+  --brass:#d9a441;
+  --teal:#3f9a92;
+  --ink:#f1e9de;
+  --muted:#a8998a;
+  --genre:var(--brass);
+  --display:"Syne", "Helvetica Neue", Arial, sans-serif;
+  --body:"Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono:"DM Mono", ui-monospace, Menlo, monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--walnut);color:var(--ink);font:15px/1.5 var(--body);-webkit-font-smoothing:antialiased;
+  padding-bottom:calc(132px + env(safe-area-inset-bottom))}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--genre);outline-offset:2px}
+.wrap{max-width:880px;margin:0 auto;padding:0 18px}
+
+/* masthead */
+header{padding:calc(28px + env(safe-area-inset-top)) 0 18px;border-bottom:1px solid var(--line)}
+.mast{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.logo{font:800 clamp(56px,13vw,104px)/.82 var(--display);letter-spacing:-.04em;margin:0;display:flex;align-items:flex-end}
+.logo .dot{display:inline-block;width:.16em;height:.16em;border-radius:50%;background:var(--genre);margin-left:.06em;margin-bottom:.06em;transition:background .4s}
+.tag{font:500 12px/1.4 var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.12em;text-align:right}
+.tag b{color:var(--ink);font-weight:500}
+.cap{margin-top:16px;display:flex;align-items:center;gap:12px;font:12px var(--mono);color:var(--muted)}
+.cap .bar{flex:1;height:4px;background:var(--walnut-3);border-radius:2px;overflow:hidden;display:flex}
+.cap .bar span{height:100%}
+
+/* genre dial */
+nav.dial{display:flex;gap:8px;overflow-x:auto;padding:16px 0 4px;scrollbar-width:none}
+nav.dial::-webkit-scrollbar{display:none}
+.gbtn{flex:0 0 auto;border:1px solid var(--line);background:transparent;border-radius:999px;padding:8px 14px 8px 10px;display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
+.gbtn i{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.gbtn small{font:11px var(--mono);color:var(--muted)}
+.gbtn[aria-pressed="true"]{background:var(--ink);color:var(--walnut);border-color:var(--ink)}
+.gbtn[aria-pressed="true"] small{color:#6b5d50}
+.gbtn.empty{border-style:dashed;color:var(--muted);font-weight:500}
+
+/* section head */
+.shead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:22px 0 6px;flex-wrap:wrap}
+.shead h2{font:800 30px/1 var(--display);margin:0;letter-spacing:-.02em;text-wrap:balance}
+.shead p{margin:0;color:var(--muted);font-size:13px;max-width:52ch}
+.tools{display:flex;gap:8px;margin:12px 0 4px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--walnut-2);border-radius:8px;padding:7px 11px;font-size:13px}
+.chip:hover{border-color:var(--genre)}
+input.search{flex:1;min-width:160px;background:var(--walnut-2);border:1px solid var(--line);border-radius:8px;padding:7px 11px;color:var(--ink);font:inherit;font-size:14px}
+
+/* ranked list */
+ol.list{list-style:none;margin:8px 0 0;padding:0}
+.row{display:grid;grid-template-columns:56px 1fr auto;gap:14px;align-items:start;padding:14px 0;border-top:1px solid var(--line)}
+.row.top10 .rk{color:var(--genre)}
+.rk{font:500 26px/1 var(--mono);color:#6e5e50;font-variant-numeric:tabular-nums;padding-top:4px}
+.nm{font-weight:600;font-size:16px;line-height:1.25}
+.meta{font:12px var(--mono);color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+.why{margin:6px 0 0;color:#d8cdbf;font-size:14px;max-width:62ch}
+.why .src{font:11px var(--mono);color:var(--teal);text-transform:uppercase;letter-spacing:.06em;margin-left:4px}
+.play{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--walnut-2);display:grid;place-items:center;margin-top:2px}
+.play:hover{border-color:var(--genre)}
+.row.on{background:linear-gradient(90deg,color-mix(in srgb,var(--genre) 12%,transparent),transparent 70%)}
+.row.on .play{background:var(--genre);border-color:var(--genre);color:var(--walnut)}
+.row.dead .nm{text-decoration:line-through;text-decoration-color:#7a5048}
+.divider{font:11px var(--mono);color:var(--genre);text-transform:uppercase;letter-spacing:.14em;padding:10px 0 4px;border-top:1px solid var(--genre)}
+.emptybox{border:1px dashed var(--line);border-radius:14px;padding:28px;text-align:center;color:var(--muted);margin-top:16px}
+.mine{font:10px var(--mono);border:1px solid var(--teal);color:var(--teal);border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:2px}
+.del{background:none;border:none;color:var(--muted);font:11px var(--mono);padding:0;margin-left:8px;text-decoration:underline}
+
+/* player */
+.player{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--walnut-2) 94%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:12px 0 calc(12px + env(safe-area-inset-bottom));z-index:5}
+.pin{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
+.disc{width:58px;height:58px;border-radius:50%;background:repeating-radial-gradient(circle,#0e0a08 0 2px,#1d1612 2px 4px);position:relative;flex:none}
+.disc::after{content:"";position:absolute;inset:20px;border-radius:50%;background:var(--genre)}
+.disc.spin{animation:spin 3.2s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.disc.spin{animation:none}}
+.np{min-width:0}
+.np .k{font:11px var(--mono);color:var(--genre);text-transform:uppercase;letter-spacing:.12em}
+.np .t{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np .s{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctl{display:flex;gap:6px;align-items:center}
+.ctl button{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:transparent;display:grid;place-items:center}
+.ctl .main{width:52px;height:52px;background:var(--ink);color:var(--walnut);border-color:var(--ink)}
+.vol{display:flex;align-items:center;gap:8px;margin-left:6px}
+.vol input{width:90px;accent-color:var(--genre)}
+@media (max-width:560px){.tag{text-align:left}.vol{display:none}.row{grid-template-columns:40px 1fr auto;gap:10px}.rk{font-size:20px}}
+
+/* dialog */
+dialog{background:var(--walnut-2);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:22px;width:min(460px,92vw)}
+dialog::backdrop{background:rgba(8,5,3,.7)}
+dialog h3{font:800 22px var(--display);margin:0 0 4px}
+dialog p{color:var(--muted);font-size:13px;margin:0 0 14px}
+.fld{display:grid;gap:4px;margin-bottom:10px}
+.fld label{font:11px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.fld input,.fld textarea,.fld select{background:var(--walnut);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink);font:inherit}
+.acts{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+.acts .go{background:var(--genre);color:var(--walnut);border:none;border-radius:8px;padding:9px 16px;font-weight:600}
+.acts .no{background:none;border:1px solid var(--line);border-radius:8px;padding:9px 14px}
+.toast{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--walnut);padding:9px 14px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s;z-index:9;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+footer{color:var(--muted);font-size:12px;padding:30px 0 10px;border-top:1px solid var(--line);margin-top:24px}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <div class="mast">
+    <h1 class="logo">MCM<span class="dot"></span></h1>
+    <div class="tag"><b>Michael Cannon Mix</b><br>Personal radio · 10 genres max · 100 stations max</div>
+  </div>
+  <div class="cap"><span id="capTxt">0 / 100</span><div class="bar" id="capBar"></div></div>
+  <nav class="dial" id="dial" aria-label="Genres"></nav>
+</header>
+
+<main class="wrap">
+  <div class="shead"><h2 id="gTitle">Jazz</h2><p id="gNote"></p></div>
+  <div class="tools">
+    <input class="search" id="q" type="search" placeholder="Filter by name, city, style" aria-label="Filter stations">
+    <button class="chip" id="addSt">+ Add station</button>
+    <button class="chip" id="shuffle">Shuffle top 10</button>
+    <button class="chip" id="export">Copy backup</button>
+  </div>
+  <ol class="list" id="list"></ol>
+  <footer>
+    Streams come straight from each broadcaster. If a stored link has moved, MCM looks up the station’s current stream in the open Radio Browser directory and remembers it. A struck-through name means no working stream was found today; tap it again later.
+  </footer>
+</main>
+
+<div class="player" role="region" aria-label="Player">
+  <div class="wrap pin">
+    <div class="disc" id="disc" aria-hidden="true"></div>
+    <div class="np"><div class="k" id="npK">MCM · ready</div><div class="t" id="npT">Pick a station</div><div class="s" id="npS">Jazz #1 is a good place to start</div></div>
+    <div class="ctl">
+      <button id="prev" aria-label="Previous station"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+      <button class="main" id="toggle" aria-label="Play"><svg id="icoPlay" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l14-8z"/></svg><svg id="icoPause" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg></button>
+      <button id="next" aria-label="Next station"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+      <div class="vol"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/></svg><input id="vol" type="range" min="0" max="1" step="0.01" value="0.9" aria-label="Volume"></div>
+    </div>
+  </div>
+</div>
+
+<dialog id="dlgSt">
+  <form id="fSt" method="dialog">
+    <h3>Add a station</h3>
+    <p>Adds to the genre you pick. MCM holds 100 stations at most.</p>
+    <div class="fld"><label for="sGenre">Genre</label><select id="sGenre"></select></div>
+    <div class="fld"><label for="sName">Station name</label><input id="sName" required></div>
+    <div class="fld"><label for="sPlace">City, country</label><input id="sPlace"></div>
+    <div class="fld"><label for="sUrl">Stream URL (optional; leave empty to auto-find by name)</label><input id="sUrl" type="url" placeholder="https://…"></div>
+    <div class="fld"><label for="sWhy">Why it’s here</label><textarea id="sWhy" rows="2"></textarea></div>
+    <div class="acts"><button type="button" class="no" id="cSt">Cancel</button><button class="go" id="okSt">Add</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlgG">
+  <form id="fG" method="dialog">
+    <h3>Add a genre</h3>
+    <p>Up to 10 genres. Each one aims for a top 10.</p>
+    <div class="fld"><label for="gName">Genre name</label><input id="gName" required placeholder="e.g. Soul, Afrobeat, Bossa nova"></div>
+    <div class="fld"><label for="gRule">House rule (optional)</label><input id="gRule" placeholder="e.g. no smooth jazz"></div>
+    <div class="acts"><button type="button" class="no" id="cG">Cancel</button><button class="go">Add genre</button></div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<audio id="audio" preload="none"></audio>
+
+<script>
+/* ---------- Curated data: rank order = list order ---------- */
+const GENRES = [
+ {id:"jazz", name:"Jazz", color:"#d9a441",
+  note:"Ranked on how much of the day is real jazz, the depth of the hosts and curation, cultural weight, industry recognition, and stream quality. Top 10 are highlighted.",
+  stations:[
+  {n:"WBGO 88.3",p:"Newark, NJ, USA",f:"FM · public",u:"https://wbgo.streamguys1.com/wbgo128",q:"WBGO",w:"The New York area's jazz station and the home of NPR's Jazz Night in America. Live hosts all day who know the scene firsthand. JazzWeek Station of the Year in a top-25 market.",s:"JazzWeek"},
+  {n:"WWOZ 90.7",p:"New Orleans, LA, USA",f:"FM · community",u:"https://wwoz-sc.streamguys1.com/wwoz-hi.mp3",q:"WWOZ",w:"Volunteer DJs in the city where jazz was born, playing trad, brass bands, R&B and Jazz Fest broadcasts. Twice JazzWeek Station of the Year.",s:"JazzWeek"},
+  {n:"TSF Jazz",p:"Paris, France",f:"FM 89.9 · commercial",u:"https://tsfjazz.ice.infomaniak.ch/tsfjazz-high.mp3",q:"TSF Jazz",cc:"FR",w:"France's 24/7 jazz FM station. Smart hosts, a strong European roster and an easy flow from standards to new releases."},
+  {n:"FIP Jazz",p:"Paris, France",f:"Online · Radio France",u:"https://icecast.radiofrance.fr/fipjazz-hifi.aac",q:"FIP Jazz",w:"Radio France's famously eclectic curators on jazz only. No ads, no chatter, and hi-fi AAC sound. It plays like a record collector's living room."},
+  {n:"Jazz24",p:"Seattle, WA, USA",f:"Online · KNKX",q:"Jazz24",w:"KNKX's 24/7 jazz service. Mainstream and straight-ahead jazz, very consistent, with real hosts and none of the algorithm shuffle."},
+  {n:"KJAZZ 88.1",p:"Long Beach / Los Angeles, USA",f:"FM · public",q:"KJAZZ",w:"Southern California's full-time jazz and blues FM station. It reaches a huge market and has veteran hosts who carry LA's West Coast jazz lineage."},
+  {n:"Jazz FM",p:"London, UK",f:"DAB · commercial",q:"Jazz FM",cc:"GB",w:"The UK's national jazz brand, home to Jez Nelson's Somethin' Else and the Jazz FM Awards. It leans soul-jazz and blues by day and gets serious at night.",s:"Jazzfuel"},
+  {n:"DR P8 Jazz",p:"Copenhagen, Denmark",f:"DAB+ · public",u:"https://live-icy.dr.dk/A/A29H.mp3",q:"P8 Jazz",w:"Denmark's public jazz channel with presenters. Its stream is about 324 kbps AAC, one of the best-sounding jazz streams anywhere.",s:"RadioHear"},
+  {n:"Radio Swiss Jazz",p:"Basel, Switzerland",f:"DAB · public",u:"https://stream.srg-ssr.ch/m/rsj/mp3_128",q:"Radio Swiss Jazz",w:"No ads and no talk: standards, swing, bebop, soul and blues around the clock. The best pure background jazz there is.",s:"Tuninga"},
+  {n:"JAZZ.FM91",p:"Toronto, Canada",f:"FM 91.1 · non-profit",q:"JAZZ.FM91",w:"Canada's jazz station. It carries Jamie Cullum's BBC show and Radio Deluxe, with deep Canadian jazz in between.",s:"Jazzfuel"},
+  {n:"KUVO Jazz 89.3",p:"Denver, CO, USA",f:"FM · public",q:"KUVO",w:"Rocky Mountain jazz with a strong Latin jazz tradition. JazzWeek's major-market Station of the Year.",s:"JazzWeek"},
+  {n:"WEMU 89.1",p:"Ypsilanti / Ann Arbor, MI, USA",f:"FM · public",q:"WEMU",w:"A jazz station since 1977. In 2026 it was named the #1 non-commercial jazz station in the US by market share.",s:"Nielsen via EMU"},
+  {n:"ABC Jazz",p:"Sydney, Australia",f:"DAB+ · public",q:"ABC Jazz",cc:"AU",w:"The Australian Broadcasting Corporation's 24/7 jazz channel. A good place to hear Australian and NZ players you won't find elsewhere."},
+  {n:"KCSM Jazz 91",p:"San Mateo / Bay Area, CA, USA",f:"FM · public",q:"KCSM",w:"The Bay Area's full-time jazz station. Its knowledgeable hosts dig into hard bop and West Coast deep cuts."},
+  {n:"WDCB 90.9",p:"Chicago, IL, USA",f:"FM · public",q:"WDCB",w:"Chicago's jazz station. It covers Chicago's own heavy scene, from the AACM avant-garde to the Green Mill crowd."},
+  {n:"Czech Radio Jazz",p:"Prague, Czechia",f:"DAB · public",u:"https://rozhlas.stream/jazz_mp3_128.mp3",q:"Jazz",cc:"CZ",w:"Czech public radio's 24/7 jazz channel. Central European players and a well-built archive.",s:"Jazzfuel"},
+  {n:"KMHD 89.1",p:"Portland, OR, USA",f:"FM · public",q:"KMHD",w:"The Northwest's jazz station and the one closest to home. It covers the Portland scene and runs live studio sessions."},
+  {n:"WKCR 89.9",p:"New York, NY, USA",f:"FM · student",q:"WKCR",w:"Columbia's station, carrying on the Phil Schaap legacy. It runs marathon artist birthday broadcasts and the most scholarly jazz programming on air."},
+  {n:"KCCK 88.3",p:"Cedar Rapids, IA, USA",f:"FM · public",q:"KCCK",w:"“Iowa's jazz station.” Its program director won JazzWeek Programmer of the Year, which is real proof of a small-market station punching above its weight.",s:"JazzWeek"},
+  {n:"Jazz 90.1 WGMC",p:"Rochester, NY, USA",f:"FM · community",q:"Jazz 90.1",w:"JazzWeek Station of the Year in the 40-plus-hours-of-jazz category. Community-run and all jazz.",s:"JazzWeek"},
+  {n:"SomaFM Sonic Universe",p:"San Francisco, USA",f:"Online · listener-supported",u:"https://ice1.somafm.com/sonicuniverse-128-mp3",q:"Sonic Universe",w:"Nu-jazz, avant and European ECM-adjacent jazz. No ads. It's the forward-looking end of this list."},
+  {n:"The Jazz Groove",p:"California, USA",f:"Online",q:"Jazz Groove",w:"Hand-curated mainstream and Latin jazz with a nightclub mood. Long-running, reliable streams, listener-funded."},
+  {n:"Jazz Radio",p:"Lyon, France",f:"FM · commercial",u:"https://jazzradio.ice.infomaniak.ch/jazzradio-high.mp3",q:"Jazz Radio",cc:"FR",w:"France's other national jazz network. It leans soul-jazz and groove, a good counterweight to TSF."},
+  {n:"WCLK 91.9",p:"Atlanta, GA, USA",f:"FM · Clark Atlanta Univ.",q:"WCLK",w:"Atlanta's jazz station, run from an HBCU campus. Rooted in the Black American jazz tradition, with gospel and blues woven in."},
+  {n:"KSDS Jazz 88.3",p:"San Diego, CA, USA",f:"FM · college",q:"KSDS",w:"San Diego's full-time jazz station. A tight, well-programmed rotation from swing through modern."},
+  {n:"WRCJ 90.9",p:"Detroit, MI, USA",f:"FM · public",q:"WRCJ",w:"Detroit's jazz at night, the city of Motown and Blue Note sidemen. Classical by day.",s:"Jazzfuel"},
+  {n:"KRTU 91.7",p:"San Antonio, TX, USA",f:"FM · Trinity Univ.",q:"KRTU",w:"Jazz most of the day, with sharp new-release programming. A Texas outlier.",s:"Jazzfuel"},
+  {n:"WNCU 90.7",p:"Durham, NC, USA",f:"FM · NC Central Univ.",q:"WNCU",w:"An HBCU jazz station with deep straight-ahead programming and Triangle jazz community events."},
+  {n:"WDNA 88.9",p:"Miami, FL, USA",f:"FM · community",q:"WDNA",w:"Miami's jazz and Latin jazz community station. The best Afro-Cuban jazz programming in the US."},
+  {n:"WICN 90.5",p:"Worcester, MA, USA",f:"FM · public",q:"WICN",w:"New England's jazz station. Smart hosts and strong live-music ties."},
+  {n:"KTSU 90.9",p:"Houston, TX, USA",f:"FM · Texas Southern Univ.",q:"KTSU",w:"Houston's HBCU jazz voice, “The Choice,” with old-school hosts and Gulf Coast soul-jazz."},
+  {n:"WAER 88.3",p:"Syracuse, NY, USA",f:"FM · public",q:"WAER",w:"Former JazzWeek small-market Station of the Year. Upstate New York's jazz anchor.",s:"JazzWeek"},
+  {n:"WWNO Jazz",p:"New Orleans, LA, USA",f:"HD · public",q:"WWNO",w:"The University of New Orleans' public jazz service. A second New Orleans voice alongside WWOZ.",s:"Tuninga"},
+  {n:"KUNV 91.5",p:"Las Vegas, NV, USA",f:"FM · UNLV",q:"KUNV",w:"Named Beats Magazine Station of the Year back to back. Contemporary and smooth leaning, very polished.",s:"Radio Online"},
+  {n:"WSHA 88.9",p:"Raleigh, NC, USA",f:"FM · Shaw Univ.",q:"WSHA",w:"A historic HBCU jazz station in Raleigh. Mainstream jazz with community heart."},
+  {n:"WFSK 88.1",p:"Nashville, TN, USA",f:"FM · Fisk Univ.",q:"WFSK",w:"Fisk University's jazz station. Proof that Nashville is more than country."},
+  {n:"WVAS 90.7",p:"Montgomery, AL, USA",f:"FM · Alabama State",q:"WVAS",w:"Alabama State's jazz station, soulful and Southern."},
+  {n:"WJSU 88.5",p:"Jackson, MS, USA",f:"FM · Jackson State",q:"WJSU",w:"Mississippi jazz and blues from an HBCU, close to the source of everything."},
+  {n:"WRTI Jazz",p:"Philadelphia, PA, USA",f:"HD · Temple Univ.",q:"WRTI",w:"Philadelphia's jazz service, from the city of Coltrane, Lee Morgan and the Heath brothers."},
+  {n:"Chiaroscuro Channel",p:"NE Pennsylvania, USA",f:"Online · WVIA",q:"Chiaroscuro",w:"WVIA's 24-hour jazz stream and home of George Graham's All That Jazz. A connoisseur's pick.",s:"Jazzfuel"},
+  {n:"JazzRadio 106.8",p:"Berlin, Germany",f:"FM · commercial",q:"Jazzradio",cc:"DE",w:"Berlin's jazz station, mixing modern European jazz with lounge and soul."},
+  {n:"Radio Jazz 89.1",p:"Moscow, Russia",f:"FM · commercial",q:"Radio Jazz",cc:"RU",w:"Russia's national jazz FM station. Classic American catalog with a smooth, late-night feel."},
+  {n:"Klassik Radio Jazz",p:"Augsburg, Germany",f:"Online",q:"Klassik Radio Jazz",w:"Klassik Radio's jazz streams, including Dinner Jazz. Elegant and uninterrupted.",s:"Tuninga"},
+  {n:"All Jazz Radio",p:"Cape Town, South Africa",f:"Online",q:"All Jazz Radio",w:"South African jazz: Ibrahim, Masekela, Moholo and today's Joburg and Cape Town players. A whole tradition most lists skip.",s:"Jazzfuel"},
+  {n:"Oh! Jazz",p:"Madrid, Spain",f:"Online network",q:"Oh Jazz",w:"Jesús Perezagua's global jazz streaming network. A winner of the inaugural Jazz Forward Award.",s:"The Tonearm"},
+  {n:"Jazz Breeze",p:"Athens, Greece",f:"Online",q:"Jazz Breeze",w:"Jazz across every idiom, with world music and fusion threaded through. A Mediterranean ear.",s:"Tuninga"},
+  {n:"Swiss Groove",p:"Switzerland",f:"Online",q:"Swiss Groove",w:"Jazz, soul and Latin groove. A long-running independent with stylish, warm selection."},
+  {n:"UK Jazz Radio",p:"UK",f:"Online",q:"UK Jazz Radio",w:"Independent UK jazz with lots of British players and a broad straight-ahead rotation."},
+  {n:"Jazz London Radio",p:"London, UK",f:"Online",q:"Jazz London",w:"London's independent jazz stream, closer to the club scene than the big brands."},
+  {n:"RadioJAZZ.FM",p:"Poland",f:"Online",q:"RadioJAZZ.FM",w:"Poland's jazz station, from the country of Komeda, Stańko and a fierce modern scene."},
+  {n:"Sublime",p:"Netherlands",f:"FM · commercial",q:"Sublime",cc:"NL",w:"Soul, jazz and funk with a weekly Dutch Jazz show. The natural fill-in now that NPO Soul & Jazz shut down in September 2026.",s:"Jazzfuel"},
+  {n:"JazzContempo Radio",p:"Peru",f:"Online",q:"JazzContempo",w:"Smooth and contemporary jazz from Lima, with a Latin American lens.",s:"Jazzfuel"},
+  {n:"ArtSound FM",p:"Canberra, Australia",f:"FM · community",q:"ArtSound",w:"A community arts station with dedicated jazz programs.",s:"Jazzfuel"},
+  {n:"WICR 88.7",p:"Indianapolis, IN, USA",f:"FM · Univ. of Indianapolis",q:"WICR",w:"A run of jazz shows (Cafe Jazz, Jazz Rendezvous) in Wes Montgomery's hometown.",s:"Jazzfuel"},
+  {n:"JazzBites Radio",p:"USA",f:"Online · 4 channels",q:"JazzBites",w:"An independent four-channel jazz stream. Good for switching moods.",s:"Jazzfuel"},
+  {n:"JAZZRADIO.com",p:"USA",f:"Online network",q:"JAZZRADIO.com",w:"Dozens of single-style jazz channels (bebop, bossa, vibraphone and more). Low on personality, high on range."},
+  {n:"SmoothJazz.com",p:"California Coast, USA",f:"Online",q:"SmoothJazz.com",w:"Smooth jazz done well. The Sunday-morning setting.",s:"Jazzfuel"},
+  {n:"Best Smooth Jazz",p:"London, UK",f:"Online",q:"Best Smooth Jazz",w:"A 24-hour smooth jazz stream that respects the format's history.",s:"Tuninga"},
+  {n:"CoffeeTalk Jazz",p:"Global",f:"Online",q:"CoffeeTalk",w:"Easy acoustic jazz for working. Pairs with a pour-over.",s:"Jazzfuel"},
+  {n:"WUMM 91.1",p:"Machias, ME, USA",f:"FM · college",q:"WUMM",w:"A small-town Maine college station on Tuninga's global jazz list. A wildcard pick.",s:"Tuninga"}
+ ]},
+ {id:"reggae", name:"Reggae", color:"#3f9a92", rule:"Roots, culture, dub, rocksteady, lovers rock. No dancehall.",
+  note:"House rule: roots, culture, dub, rocksteady and lovers rock. No dancehall. Ranked on how strictly a station holds that line and how deep its selection runs.",
+  stations:[
+  {n:"Roots 96.1 FM",p:"Kingston, Jamaica",f:"FM",q:"Roots 96.1",w:"Jamaican FM focused on reggae's origins: slow, soulful records about life, freedom and faith, broadcast from the source.",s:"RadioSpinner"},
+  {n:"SomaFM Heavyweight Reggae",p:"San Francisco, USA",f:"Online · listener-supported",u:"https://ice1.somafm.com/reggae-128-mp3",q:"Heavyweight Reggae",w:"Roots, dub and classic Studio One and Treasure Isle weight. No ads and no dancehall drift."},
+  {n:"Irie FM",p:"Ocho Rios, Jamaica",f:"FM · 24/7 reggae",q:"Irie FM",w:"Jamaica's all-reggae station and a keeper of the tradition. It does play some modern sounds, so it ranks below the strict roots stations.",s:"RadioSpinner"},
+  {n:"Real Roots Radio",p:"London, UK",f:"Online",q:"Real Roots",w:"Conscious roots reggae 24/7 from London, home of UK roots, lovers rock and sound system culture.",s:"Streema"},
+  {n:"Roots Legacy Radio",p:"France",f:"Online",q:"Roots Legacy",w:"A French roots and dub station. Europe's reggae scene is huge, and this one digs into the 70s foundation and new roots."},
+  {n:"RiddimRadio.com",p:"Los Angeles, USA",f:"Online",q:"Riddim",w:"24/7 roots and culture: conscious music, live broadcasts and riddim programs.",s:"Online Radio Box"},
+  {n:"Reggae Vibe Radio",p:"USA",f:"Online",q:"Reggae Vibe",w:"“Strictly positive reggae” with hosted shows, including a Sunday program from foundation through today's roots.",s:"ReggaeVibe"},
+  {n:"Roots Reggae Radio",p:"Toronto, Canada",f:"Online",q:"Roots Reggae Radio",w:"Toronto's conscious-reggae station: ska, rocksteady and lovers rock as the foundation of roots.",s:"Caribbean Camera"},
+  {n:"Big Up Radio · Roots",p:"USA",f:"Online",q:"Big Up Radio",w:"A long-running reggae network that keeps roots on its own channel, separate from dancehall."},
+  {n:"1.FM Reggae Trade",p:"Online",f:"Online network",q:"Reggae Trade",w:"Classic and roots reggae with a clean, reliable stream. The dependable closer."}
+ ]}
+];
+
+/* ---------- State ---------- */
+const LS = k => { try { return JSON.parse(localStorage.getItem("mcm:"+k)); } catch(e){ return null; } };
+const SS = (k,v) => { try { localStorage.setItem("mcm:"+k, JSON.stringify(v)); } catch(e){} };
+let userGenres = LS("genres") || [];        // [{id,name,color,rule,stations:[]}]
+let userAdds   = LS("adds")   || {};        // {genreId:[station]}
+let resolved   = LS("resolved") || {};      // {key:url}
+let current = {g:"jazz", i:-1};
+let view = "jazz";
+const audio = document.getElementById("audio");
+const PALETTE = ["#c8664a","#8a7fd1","#d1789c","#6aa3d6","#b4b04a","#e0895a","#7fbf8a","#c49b6b"];
+
+const allGenres = () => GENRES.concat(userGenres).map(g => ({...g, stations: g.stations.concat(userAdds[g.id]||[])}));
+const total = () => allGenres().reduce((a,g)=>a+g.stations.length,0);
+const genre = id => allGenres().find(g=>g.id===id);
+const key = (g,s) => g+"|"+s.n;
+const $ = id => document.getElementById(id);
+
+function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("show"); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("show"),2600); }
+
+/* ---------- Render ---------- */
+function renderCap(){
+  const gs = allGenres(), t = total();
+  $("capTxt").textContent = `${t} / 100 stations · ${gs.length} / 10 genres`;
+  $("capBar").innerHTML = gs.map(g=>`<span style="width:${g.stations.length}%;background:${g.color}"></span>`).join("");
+}
+function renderDial(){
+  const gs = allGenres();
+  let h = gs.map(g=>`<button class="gbtn" style="--c:${g.color}" aria-pressed="${g.id===view}" data-g="${g.id}"><i></i>${esc(g.name)} <small>${g.stations.length}</small></button>`).join("");
+  if (gs.length < 10) h += `<button class="gbtn empty" id="addG">+ Genre ${gs.length+1} of 10</button>`;
+  $("dial").innerHTML = h;
+}
+function esc(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function renderList(){
+  const g = genre(view); if(!g) return;
+  document.documentElement.style.setProperty("--genre", g.color);
+  $("gTitle").textContent = g.name;
+  $("gNote").textContent = g.note || (g.rule ? "House rule: "+g.rule : "Your genre. Add up to 10 stations; top 10 is the goal.");
+  const f = $("q").value.trim().toLowerCase();
+  const dead = LS("dead")||{};
+  if(!g.stations.length){ $("list").innerHTML = `<li class="emptybox">No stations yet. Tap <b>+ Add station</b> and MCM will find the stream by name.</li>`; return; }
+  let html = "";
+  g.stations.forEach((s,i)=>{
+    if (f && !(s.n+" "+s.p+" "+s.f+" "+s.w).toLowerCase().includes(f)) return;
+    if (i===10 && !f) html += `<li class="divider">The rest of the ranking</li>`;
+    const on = current.g===g.id && current.i===i;
+    html += `<li class="row ${i<10?"top10":""} ${on?"on":""} ${dead[key(g.id,s)]?"dead":""}" data-i="${i}">
+      <div class="rk">${String(i+1).padStart(2,"0")}</div>
+      <div><div class="nm">${esc(s.n)}${s.mine?`<span class="mine">YOURS</span><button class="del" data-del="${i}">remove</button>`:""}</div>
+      <div class="meta">${esc(s.p)}${s.f?" · "+esc(s.f):""}</div>
+      ${s.w?`<p class="why">${esc(s.w)}${s.s?`<span class="src">${esc(s.s)}</span>`:""}</p>`:""}</div>
+      <button class="play" data-play="${i}" aria-label="${on&&!audio.paused?"Pause":"Play"} ${esc(s.n)}">${on&&!audio.paused?'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>':'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l14-8z"/></svg>'}</button>
+    </li>`;
+  });
+  $("list").innerHTML = html;
+}
+function renderAll(){ renderCap(); renderDial(); renderList(); }
+
+/* ---------- Stream resolution ---------- */
+const API = ["https://de1.api.radio-browser.info","https://nl1.api.radio-browser.info","https://at1.api.radio-browser.info","https://fi1.api.radio-browser.info"];
+async function lookup(s){
+  const q = encodeURIComponent(s.q || s.n);
+  for (const base of API){
+    try{
+      const ctl = new AbortController(); const t = setTimeout(()=>ctl.abort(), 7000);
+      let url = `${base}/json/stations/search?name=${q}&hidebroken=true&order=clickcount&reverse=true&limit=12`;
+      if (s.cc) url += `&countrycode=${s.cc}`;
+      const r = await fetch(url,{signal:ctl.signal}); clearTimeout(t);
+      if(!r.ok) continue;
+      const arr = await r.json();
+      const secure = location.protocol==="https:";
+      const ok = arr.filter(x=>x.url_resolved && (!secure || x.url_resolved.startsWith("https")));
+      return ok.map(x=>x.url_resolved);
+    }catch(e){ /* try next mirror */ }
+  }
+  return [];
+}
+function tryUrl(u){
+  return new Promise(res=>{
+    let done=false;
+    const fin=v=>{ if(done) return; done=true; audio.removeEventListener("playing",okH); audio.removeEventListener("error",erH); clearTimeout(t); res(v); };
+    const okH=()=>fin(true), erH=()=>fin(false);
+    audio.addEventListener("playing",okH); audio.addEventListener("error",erH);
+    const t=setTimeout(()=>fin(false), 12000);
+    audio.src=u; audio.play().catch(()=>fin(false));
+  });
+}
+
+let token = 0;
+async function playStation(gid,i){
+  const g = genre(gid); const s = g && g.stations[i]; if(!s) return;
+  const my = ++token;
+  current = {g:gid,i};
+  setNow(s, g, "Tuning in…");
+  renderList();
+  const k = key(gid,s);
+  const tried = new Set();
+  const cands = [resolved[k], s.u].filter(Boolean);
+  for (const u of cands){ if(tried.has(u)) continue; tried.add(u); if(await tryUrl(u)){ if(my===token) win(k,u,s,g); return; } if(my!==token) return; }
+  setNow(s, g, "Finding current stream…");
+  const found = await lookup(s);
+  for (const u of found.slice(0,4)){ if(tried.has(u)) continue; tried.add(u); if(my!==token) return; if(await tryUrl(u)){ if(my===token) win(k,u,s,g); return; } }
+  if(my!==token) return;
+  const dead = LS("dead")||{}; dead[k]=Date.now(); SS("dead",dead);
+  setNow(s, g, "Off air right now. Try again later or skip.");
+  setIcons(); renderList();
+}
+function win(k,u,s,g){
+  resolved[k]=u; SS("resolved",resolved);
+  const dead = LS("dead")||{}; delete dead[k]; SS("dead",dead);
+  setNow(s,g,s.p); setIcons(); renderList(); mediaSession(s,g);
+}
+function setNow(s,g,sub){
+  $("npK").textContent = `MCM · ${g.name} #${current.i+1}`;
+  $("npT").textContent = s.n; $("npS").textContent = sub;
+}
+function setIcons(){
+  const p = !audio.paused && current.i>=0;
+  $("icoPlay").style.display = p?"none":""; $("icoPause").style.display = p?"":"none";
+  $("toggle").setAttribute("aria-label", p?"Pause":"Play");
+  $("disc").classList.toggle("spin", p);
+}
+function mediaSession(s,g){
+  if(!("mediaSession" in navigator)) return;
+  navigator.mediaSession.metadata = new MediaMetadata({title:s.n, artist:`MCM · ${g.name} #${current.i+1}`, album:s.p});
+  navigator.mediaSession.setActionHandler("previoustrack", ()=>step(-1));
+  navigator.mediaSession.setActionHandler("nexttrack", ()=>step(1));
+}
+function step(d){
+  const g = genre(current.i<0 ? view : current.g); if(!g||!g.stations.length) return;
+  const i = current.i<0 ? 0 : (current.i + d + g.stations.length) % g.stations.length;
+  playStation(g.id,i);
+}
+
+/* ---------- Events ---------- */
+$("dial").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  if (b.id==="addG"){ $("dlgG").showModal(); return; }
+  view = b.dataset.g;
+  SS("lastGenre", b.dataset.g); $("q").value=""; renderAll();
+});
+$("list").addEventListener("click", e=>{
+  const del = e.target.closest("[data-del]");
+  if (del){ const g=genre(view); const s=g.stations[+del.dataset.del]; userAdds[g.id]=(userAdds[g.id]||[]).filter(x=>x.n!==s.n); SS("adds",userAdds); toast("Removed "+s.n); renderAll(); return; }
+  const b = e.target.closest("[data-play]"); if(!b) return;
+  const i = +b.dataset.play;
+  if (current.g===view && current.i===i && audio.src){ audio.paused ? audio.play().catch(()=>{}) : audio.pause(); return; }
+  playStation(view, i);
+});
+$("toggle").addEventListener("click", ()=>{
+  if (current.i<0){ playStation(view,0); return; }
+  audio.paused ? audio.play().catch(()=>playStation(current.g,current.i)) : audio.pause();
+});
+$("prev").addEventListener("click", ()=>step(-1));
+$("next").addEventListener("click", ()=>step(1));
+$("vol").addEventListener("input", e=>{ audio.volume=+e.target.value; SS("vol",+e.target.value); });
+audio.addEventListener("play", ()=>{ setIcons(); renderList(); });
+audio.addEventListener("pause", ()=>{ setIcons(); renderList(); });
+$("q").addEventListener("input", renderList);
+$("shuffle").addEventListener("click", ()=>{ const g=genre(view); const n=Math.min(10,g.stations.length); if(!n) return; playStation(g.id, Math.floor(Math.random()*n)); });
+$("export").addEventListener("click", async ()=>{
+  const data = JSON.stringify({genres:userGenres, adds:userAdds});
+  try{ await navigator.clipboard.writeText(data); toast("Backup copied. Paste it to Claude to bake it into MCM."); }
+  catch(e){ toast("Copy was blocked here. Your additions are still saved in this browser."); }
+});
+
+/* add station */
+$("addSt").addEventListener("click", ()=>{
+  if (total()>=100){ toast("MCM is full at 100. Remove a station to add another."); return; }
+  $("sGenre").innerHTML = allGenres().map(g=>`<option value="${g.id}" ${g.id===view?"selected":""}>${esc(g.name)}</option>`).join("");
+  $("fSt").reset(); $("sGenre").value=view; $("dlgSt").showModal();
+});
+$("cSt").addEventListener("click", ()=>$("dlgSt").close());
+$("fSt").addEventListener("submit", e=>{
+  e.preventDefault();
+  if (total()>=100){ toast("MCM is full at 100."); $("dlgSt").close(); return; }
+  const gid=$("sGenre").value, n=$("sName").value.trim(); if(!n) return;
+  const s={n, p:$("sPlace").value.trim()||"—", f:"Added by you", u:$("sUrl").value.trim()||undefined, q:n, w:$("sWhy").value.trim(), mine:true};
+  (userAdds[gid] ||= []).push(s); SS("adds",userAdds);
+  $("dlgSt").close(); view=gid; renderAll(); toast(`${n} added to ${genre(gid).name}`);
+});
+
+/* add genre */
+$("cG").addEventListener("click", ()=>$("dlgG").close());
+$("fG").addEventListener("submit", e=>{
+  e.preventDefault();
+  const name=$("gName").value.trim(); if(!name) return;
+  if (allGenres().length>=10){ toast("10 genres is the max."); $("dlgG").close(); return; }
+  const id = "u-"+name.toLowerCase().replace(/[^a-z0-9]+/g,"-")+"-"+Date.now().toString(36);
+  userGenres.push({id,name,color:PALETTE[userGenres.length%PALETTE.length],rule:$("gRule").value.trim(),stations:[]});
+  SS("genres",userGenres); $("dlgG").close(); $("fG").reset();
+  view=id; renderAll(); toast(`${name} added. Now add up to 10 stations.`);
+});
+
+/* init */
+(function(){
+  const v = LS("vol"); if (typeof v==="number"){ audio.volume=v; $("vol").value=v; } else audio.volume=.9;
+  const lg = LS("lastGenre"); if (lg && genre(lg)) view = lg;
+  renderAll();
+})();
+</script>
+</body>
+</html>
